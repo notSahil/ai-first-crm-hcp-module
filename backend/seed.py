@@ -24,6 +24,8 @@ hcps = [
     HCP(name="Dr. Williams",  specialty="General Practitioner", hospital="Community Health Clinic", city="Seattle", email="williams@commhealth.com"),
     HCP(name="Dr. Singh",     specialty="Rheumatologist", hospital="Joint & Bone Clinic",       city="Boston",      email="singh@jointbone.com"),
     HCP(name="Dr. Chen",      specialty="Gastroenterologist", hospital="Digestive Health Center", city="San Francisco", email="chen@dhcsf.com"),
+    HCP(name="Dr. Sharma",    specialty="Cardiologist",   hospital="HeartCare Medical Center",  city="Mumbai",      email="sharma@heartcare.com"),
+    HCP(name="Dr. Kumar",     specialty="Orthopedic Surgeon", hospital="Bone & Joint Hospital", city="Delhi",       email="kumar@bonejoint.com"),
 ]
 
 # ── Seed Materials ────────────────────────────────────────────────────────────

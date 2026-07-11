@@ -274,9 +274,12 @@ Format your response clearly with sections."""
         {"role": "user", "content": f"Interaction details:\n{current_form_state}"},
     ])
 
+    suggestions_text = response.content.strip()
+
     return json.dumps({
         "action": "suggest_follow_up",
-        "suggestions": response.content.strip(),
+        "suggestions": suggestions_text,
+        "form_updates": {"follow_up_actions": suggestions_text},
     })
 
 

@@ -80,13 +80,15 @@ class InteractionCreate(BaseModel):
 
 
 # ── Helper: parse form updates from tool outputs ──────────────────────────────
-def extract_form_updates_from_messages(messages: list) -> tuple[dict, str]:
+def extract_tool_data_from_messages(messages: list) -> tuple[dict, str, dict]:
     """
     Walk through the message list from LangGraph and collect form_updates
-    from any tool messages. Returns (merged_form_updates, action_name).
+    and extra content (summary, suggestions, search results) from tool messages.
+    Returns (merged_form_updates, action_name, extra_data).
     """
     merged_updates = {}
     action = None
+    extra_data = {}
 
     for msg in messages:
         if hasattr(msg, "content") and isinstance(msg.content, str):
@@ -97,10 +99,19 @@ def extract_form_updates_from_messages(messages: list) -> tuple[dict, str]:
                         merged_updates.update(data["form_updates"])
                     if "action" in data:
                         action = data["action"]
+                    # Capture extra content for chat display
+                    if "suggestions" in data:
+                        extra_data["suggestions"] = data["suggestions"]
+                    if "summary" in data:
+                        extra_data["summary"] = data["summary"]
+                    if "results" in data:
+                        extra_data["results"] = data["results"]
+                    if "message" in data:
+                        extra_data["message"] = data["message"]
             except (json.JSONDecodeError, TypeError):
                 pass
 
-    return merged_updates, action
+    return merged_updates, action, extra_data
 
 
 # ── POST /api/chat ─────────────────────────────────────────────────────────────
@@ -132,23 +143,38 @@ async def chat(request: ChatRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Agent error: {str(e)}")
 
-    # Extract the final AI reply (last non-tool message)
+    # Extract form updates and extra data from tool messages
+    form_updates, action, extra_data = extract_tool_data_from_messages(result["messages"])
+
+    # Build the reply — use actual tool content for specific actions
     final_reply = ""
-    for msg in reversed(result["messages"]):
-        if hasattr(msg, "content") and isinstance(msg.content, str) and msg.content.strip():
-            # Skip tool outputs (they are JSON)
-            try:
-                json.loads(msg.content)
-                # It's JSON — skip (it's a tool result)
-            except (json.JSONDecodeError, TypeError):
-                final_reply = msg.content.strip()
-                break
+
+    if action == "get_interaction_summary" and "summary" in extra_data:
+        final_reply = f"Here is the formal interaction summary:\n\n{extra_data['summary']}"
+    elif action == "suggest_follow_up" and "suggestions" in extra_data:
+        final_reply = f"Here are your personalized follow-up recommendations:\n\n{extra_data['suggestions']}"
+    elif action == "search_hcp" and "results" in extra_data:
+        results = extra_data["results"]
+        if results:
+            lines = []
+            for r in results:
+                lines.append(f"• **{r.get('name', 'Unknown')}** — {r.get('specialty', 'N/A')}, {r.get('hospital', 'N/A')}, {r.get('city', 'N/A')}")
+            final_reply = f"Found {len(results)} HCP(s):\n\n" + "\n".join(lines)
+        else:
+            final_reply = extra_data.get("message", "No HCPs found matching your search.")
+    else:
+        # Default: use the LLM's conversational reply
+        for msg in reversed(result["messages"]):
+            if hasattr(msg, "content") and isinstance(msg.content, str) and msg.content.strip():
+                try:
+                    json.loads(msg.content)
+                    # It's JSON — skip (it's a tool result)
+                except (json.JSONDecodeError, TypeError):
+                    final_reply = msg.content.strip()
+                    break
 
     if not final_reply:
         final_reply = "I've processed your request and updated the form."
-
-    # Extract form updates from tool messages
-    form_updates, action = extract_form_updates_from_messages(result["messages"])
 
     return ChatResponse(
         reply=final_reply,
