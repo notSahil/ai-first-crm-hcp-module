@@ -73,6 +73,9 @@ class InteractionCreate(BaseModel):
     topics_discussed: str = ""
     sentiment: str = ""
     materials_shared: list = []
+    samples_distributed: list = []
+    outcomes: str = ""
+    follow_up_actions: str = ""
     summary: str = ""
 
 
@@ -181,6 +184,9 @@ def save_interaction(body: InteractionCreate, db: Session = Depends(get_db)):
         topics_discussed=body.topics_discussed,
         sentiment=body.sentiment,
         materials_shared=json.dumps(body.materials_shared),
+        samples_distributed=json.dumps(body.samples_distributed),
+        outcomes=body.outcomes,
+        follow_up_actions=body.follow_up_actions,
         summary=body.summary,
     )
     db.add(interaction)

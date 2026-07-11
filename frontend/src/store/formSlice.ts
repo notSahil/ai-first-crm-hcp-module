@@ -9,6 +9,9 @@ export interface FormState {
   topics_discussed: string;
   sentiment: string;
   materials_shared: string[];
+  samples_distributed: string[];
+  outcomes: string;
+  follow_up_actions: string;
   summary: string;
 }
 
@@ -31,6 +34,9 @@ const initialState: FormState = {
   topics_discussed: '',
   sentiment: '',
   materials_shared: [],
+  samples_distributed: [],
+  outcomes: '',
+  follow_up_actions: '',
   summary: '',
 };
 
@@ -49,6 +55,9 @@ const formSlice = createSlice({
       if (updates.topics_discussed !== undefined && updates.topics_discussed !== '') state.topics_discussed = updates.topics_discussed;
       if (updates.sentiment !== undefined && updates.sentiment !== '') state.sentiment = updates.sentiment;
       if (updates.materials_shared !== undefined && updates.materials_shared.length > 0) state.materials_shared = updates.materials_shared;
+      if (updates.samples_distributed !== undefined && updates.samples_distributed.length > 0) state.samples_distributed = updates.samples_distributed;
+      if (updates.outcomes !== undefined && updates.outcomes !== '') state.outcomes = updates.outcomes;
+      if (updates.follow_up_actions !== undefined && updates.follow_up_actions !== '') state.follow_up_actions = updates.follow_up_actions;
       if (updates.summary !== undefined && updates.summary !== '') state.summary = updates.summary;
     },
     // Reset the form

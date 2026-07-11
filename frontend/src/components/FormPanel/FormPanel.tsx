@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
 import './FormPanel.css';
@@ -6,14 +6,15 @@ import './FormPanel.css';
 const INTERACTION_TYPES = ['Meeting', 'Call', 'Email', 'Conference', 'Virtual'];
 
 
-const sentimentClass: Record<string, string> = {
-  Positive: 'sentiment-positive',
-  Neutral: 'sentiment-neutral',
-  Negative: 'sentiment-negative',
-};
 
 const FormPanel: React.FC = () => {
   const form = useSelector((state: RootState) => state.form);
+  const [voiceToast, setVoiceToast] = useState(false);
+
+  const handleVoiceNote = () => {
+    setVoiceToast(true);
+    setTimeout(() => setVoiceToast(false), 4000);
+  };
 
   return (
     <div className="form-panel">
@@ -91,12 +92,19 @@ const FormPanel: React.FC = () => {
         {/* Sentiment badge */}
         {form.sentiment && (
           <div className="form-field form-field--full">
-            <label className="form-label">Sentiment</label>
-            <div className={`sentiment-badge ${sentimentClass[form.sentiment] || ''}`}>
-              {form.sentiment === 'Positive' && '😊'}
-              {form.sentiment === 'Neutral' && '😐'}
-              {form.sentiment === 'Negative' && '😞'}
-              &nbsp;{form.sentiment}
+            <label className="form-label">Observed/Inferred HCP Sentiment</label>
+            <div className="sentiment-radio-group">
+              {['Positive', 'Neutral', 'Negative'].map((s) => (
+                <label key={s} className={`sentiment-radio-option ${form.sentiment === s ? 'sentiment-radio-option--active' : ''}`}>
+                  <input type="radio" checked={form.sentiment === s} readOnly disabled />
+                  <span className="sentiment-emoji">
+                    {s === 'Positive' && '😊'}
+                    {s === 'Neutral' && '😐'}
+                    {s === 'Negative' && '😞'}
+                  </span>
+                  {s}
+                </label>
+              ))}
             </div>
           </div>
         )}
@@ -126,14 +134,23 @@ const FormPanel: React.FC = () => {
         </div>
 
         {/* Voice note link */}
-        <div className="voice-note-link">
-          <span className="voice-note-icon">🎤</span>
+        <div className="voice-note-link" onClick={handleVoiceNote}>
+          <span className="voice-note-icon">✏️</span>
           <span>Summarize from Voice Note (Requires Consent)</span>
         </div>
 
-        {/* Materials Shared */}
+        {/* Voice toast notification */}
+        {voiceToast && (
+          <div className="voice-toast">
+            🎤 Voice note simulation: Please type or dictate your meeting notes in the AI chat on the right panel. The AI will automatically extract all fields.
+          </div>
+        )}
+
+        {/* MATERIALS SHARED / SAMPLES DISTRIBUTED */}
         <div className="form-section">
           <p className="form-section-label">Materials Shared / Samples Distributed</p>
+
+          {/* Materials Shared */}
           <label className="form-label">Materials Shared</label>
           <div className="materials-box">
             {form.materials_shared.length === 0 ? (
@@ -154,6 +171,52 @@ const FormPanel: React.FC = () => {
               </button>
             </div>
           </div>
+
+          {/* Samples Distributed */}
+          <label className="form-label" style={{ marginTop: '12px' }}>Samples Distributed</label>
+          <div className="materials-box">
+            {form.samples_distributed.length === 0 ? (
+              <span className="materials-empty">No samples added.</span>
+            ) : (
+              <ul className="materials-list">
+                {form.samples_distributed.map((s, i) => (
+                  <li key={i} className="material-tag material-tag--sample">
+                    <span className="material-icon">💊</span>
+                    {s}
+                  </li>
+                ))}
+              </ul>
+            )}
+            <div className="materials-footer">
+              <button className="btn-search-add" disabled>
+                <span>+</span> Add Sample
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Outcomes */}
+        <div className="form-field form-field--full">
+          <label className="form-label">Outcomes</label>
+          <textarea
+            className="form-textarea"
+            readOnly
+            value={form.outcomes}
+            placeholder="Key outcomes or agreements..."
+            rows={3}
+          />
+        </div>
+
+        {/* Follow-up Actions */}
+        <div className="form-field form-field--full">
+          <label className="form-label">Follow-up Actions</label>
+          <textarea
+            className="form-textarea"
+            readOnly
+            value={form.follow_up_actions}
+            placeholder="Next steps or follow-up actions..."
+            rows={3}
+          />
         </div>
 
         {/* AI Summary */}

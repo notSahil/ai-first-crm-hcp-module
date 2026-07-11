@@ -72,6 +72,9 @@ class Interaction(Base):
     topics_discussed = Column(Text)
     sentiment = Column(String(50))
     materials_shared = Column(Text)  # JSON string of materials list
+    samples_distributed = Column(Text)  # JSON string of samples list
+    outcomes = Column(Text)
+    follow_up_actions = Column(Text)
     summary = Column(Text)
     created_at = Column(DateTime, default=datetime.utcnow)
 
@@ -88,5 +91,8 @@ class Interaction(Base):
             "topics_discussed": self.topics_discussed,
             "sentiment": self.sentiment,
             "materials_shared": self.materials_shared,
+            "samples_distributed": self.samples_distributed,
+            "outcomes": self.outcomes,
+            "follow_up_actions": self.follow_up_actions,
             "summary": self.summary,
         }

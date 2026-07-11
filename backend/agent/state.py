@@ -13,6 +13,9 @@ class FormState(TypedDict, total=False):
     topics_discussed: str
     sentiment: str
     materials_shared: list[str]
+    samples_distributed: list[str]
+    outcomes: str
+    follow_up_actions: str
     summary: str
 
 

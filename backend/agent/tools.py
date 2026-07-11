@@ -70,13 +70,19 @@ Extract interaction details from the text and return ONLY valid JSON with these 
   "attendees": "Comma-separated names of other attendees (besides the HCP, or empty)",
   "topics_discussed": "Key discussion points, products mentioned, clinical topics",
   "sentiment": "One of: Positive, Neutral, Negative (infer from context if not stated)",
-  "materials_shared": ["list", "of", "materials", "brochures", "samples", "shared"]
+  "materials_shared": ["list of brochures, leaflets, or printed materials shared"],
+  "samples_distributed": ["list of drug samples or product samples physically given to the HCP"],
+  "outcomes": "Key outcomes or agreements reached during the interaction (or empty string)",
+  "follow_up_actions": "Next steps or follow-up actions agreed upon (or empty string)"
 }}
 
 Rules:
 - Return ONLY the JSON object. No markdown, no explanation.
 - If a field is not mentioned, use an empty string or empty array.
-- For materials_shared, extract specific brochures, samples, or materials mentioned.
+- For materials_shared, extract brochures, leaflets, printed materials.
+- For samples_distributed, extract drug samples, product samples physically handed over.
+- For outcomes, extract any agreements, commitments, or key decisions made.
+- For follow_up_actions, extract any agreed next steps like scheduling a follow-up, sending data, etc.
 - Infer sentiment from words like 'positive', 'enthusiastic', 'good', 'negative', 'resistant', 'neutral'.
 """
 
@@ -103,6 +109,9 @@ Rules:
             "topics_discussed": description,
             "sentiment": "Neutral",
             "materials_shared": [],
+            "samples_distributed": [],
+            "outcomes": "",
+            "follow_up_actions": "",
         }
 
     return json.dumps({"action": "log_interaction", "form_updates": extracted})
@@ -134,9 +143,10 @@ Return ONLY a valid JSON object containing ONLY the fields that need to change.
 Do NOT include fields that are NOT mentioned in the correction.
 
 Valid field names: hcp_name, interaction_type, date, time, attendees,
-topics_discussed, sentiment, materials_shared
+topics_discussed, sentiment, materials_shared, samples_distributed,
+outcomes, follow_up_actions
 
-For materials_shared, return a list of strings.
+For materials_shared and samples_distributed, return a list of strings.
 For all other fields, return a string.
 For sentiment: must be one of Positive, Neutral, Negative.
 For interaction_type: must be one of Meeting, Call, Email, Conference, Virtual.
